@@ -4,7 +4,7 @@
 ; Globale Variablen definieren
 global ProgName := "OEM-Info"
 global ProgDate := "2026-01-21"
-global ProgVer := "0.0.002"
+global ProgVer := "0.0.003"
 global ProgAuthor := "KLiNG0NE"
 global ProgUrl := "https://github.com/KLiNG0NE"
 global IconFile := "favicon.ico"
@@ -16,6 +16,13 @@ TraySetIcon IconFile
 
 ; Dem Tray-Icon im Info-Bereich ein Menüpunkt für Rechtsklick hinzufügen
 A_TrayMenu.Add("Info", (*) => MenuHelpInfo())
+
+
+valueManuf := RegRead("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation", "Manufacturer")
+valueModel := RegRead("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation", "Model")
+valueUrl := RegRead("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation", "SupportURL")
+valueHours := RegRead("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation", "SupportHours")
+valuePhone := RegRead("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation", "SupportPhone")
 
 MainGui := Gui("+Resize", ProgName " v" ProgVer)
 MainGui.SetFont("s13", "Courier New")
@@ -34,14 +41,14 @@ MainGui.MenuBar := MainMenuBar
 
 MainGui.Add("Text",, "Hersteller:")
 MainGui.Add("Text",, "Modell:*")
-MainGui.Add("Text",, "Telefon:")
-MainGui.Add("Text",, "Stunden:")
 MainGui.Add("Text",, "Website:")
-MainEditManuf := MainGui.Add("Edit", "w256 vManuf ym")
-MainEditModel := MainGui.Add("Edit", "w256 vModel")
-MainEditUrl := MainGui.Add("Edit", "w256 vUrl")
-MainEditHour := MainGui.Add("Edit", "w256 vHour")
-MainEditPhone := MainGui.Add("Edit", "w256 vPhone")
+MainGui.Add("Text",, "Stunden:")
+MainGui.Add("Text",, "Telefon:")
+MainEditManuf := MainGui.Add("Edit", "w512 vManuf ym", valueManuf)
+MainEditModel := MainGui.Add("Edit", "w512 vModel", valueModel)
+MainEditUrl := MainGui.Add("Edit", "w512 vUrl", valueUrl)
+MainEditHours := MainGui.Add("Edit", "w512 vHours", valueHours)
+MainEditPhone := MainGui.Add("Edit", "w512 vPhone", valuePhone)
 
 MainGui.Show()
 
@@ -63,11 +70,12 @@ MenuHelpInfo(*)
     Info.Add("Text",, "Version: " ProgVer)
     Info.Add("Text",, "Datum:   " ProgDate)
     Info.Add("Text",, "Author:  " ProgAuthor)
-    Info.Add("Text",, "Website: " ProgUrl)
 
+    ; https und http aus "ProgUrl" entfernen
+    ProgUrlShort := RegExReplace(ProgUrl, "^https?://")
     ; 1. Den Text in einer Variable zusammenbauen (mit Chr(34) für die Anführungszeichen)
     ; LinkText := "Website: <a href=" . Chr(34) . ProgUrl . Chr(34) . ">Online</a>"
-    LinkText := "Website: <a href=" . Chr(34) . ProgUrl . Chr(34) . ">" . ProgUrl . "</a>"
+    LinkText := "Website: <a href=" . Chr(34) . ProgUrl . Chr(34) . ">" . ProgUrlShort . "</a>"
 
     ; 2. Die Variable an das Gui-Objekt übergeben
     Info.Add("Link",, LinkText)
@@ -84,10 +92,3 @@ MenuHelpInfo(*)
         Info.Destroy()
     }
 }
-
-/* "Manufacturer"="Micro-Star International (MSI)"
-"Model"="A320M-A PRO"
-"SupportURL"="https://www.msi.com/Motherboard/A320M-A-PRO/"
-"SupportHours"="Mo-Do 09:00 - 18:00 Uhr, Fr 09:00 - 17:00 Uhr"
-"SupportPhone"="+49 69 40893 120"
-"Logo"="C:\\WINDOWS\\oemlogo\\oemlogo.gigabyte.bmp" */
